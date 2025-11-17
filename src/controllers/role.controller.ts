@@ -1,0 +1,138 @@
+import { Request, Response } from "express";
+import {
+  Role,
+  StableCoinRole,
+  GrantRoleRequest,
+  HasRoleRequest,
+  Network,
+  ConnectRequest,
+  SupportedWallets,
+} from "@hashgraph/stablecoin-npm-sdk";
+import { initializeSDK } from "../services/sdk.service";
+import { env } from "../config/env.config";
+import { mirrorNodeConfig, rpcNodeConfig } from "../config/sdk.config";
+
+export const grantAdminRole = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  if (!env.tokenId) {
+    res.status(400).json({
+      error: "Token ID is not set in the environment variables",
+    });
+    return;
+  }
+
+  const { targetAccountId } = req.body;
+
+  if (!targetAccountId) {
+    res.status(400).json({
+      error: "Missing required fields: targetAccountId",
+    });
+    return;
+  }
+
+  if (!env.adminId || !env.adminPrivateKey) {
+    res.status(500).json({
+      error:
+        "Admin credentials not configured. Please set ADMIN_ID and ADMIN_PRIVATE_KEY in .env file",
+    });
+    return;
+  }
+
+  console.log(`🔐 Reconnecting with admin account: ${env.adminId}`);
+  await Network.connect(
+    new ConnectRequest({
+      account: {
+        accountId: env.adminId,
+        privateKey: {
+          key: env.adminPrivateKey,
+          type: "ED25519",
+        },
+      },
+      network: "testnet",
+      mirrorNode: mirrorNodeConfig,
+      rpcNode: rpcNodeConfig,
+      wallet: SupportedWallets.CLIENT,
+    })
+  );
+
+  const adminHasRole = await Role.hasRole(
+    new HasRoleRequest({
+      tokenId: env.tokenId,
+      targetId: env.adminId,
+      role: StableCoinRole.DEFAULT_ADMIN_ROLE,
+    })
+  );
+
+  if (!adminHasRole) {
+    res.status(403).json({
+      error: `Admin account ${env.adminId} does not have DEFAULT_ADMIN_ROLE. Cannot grant role to others.`,
+    });
+    return;
+  }
+
+  console.log(
+    `👤 Granting DEFAULT_ADMIN_ROLE to ${targetAccountId} for token ${env.tokenId}`
+  );
+  const result = await Role.grantRole(
+    new GrantRoleRequest({
+      tokenId: env.tokenId,
+      targetId: targetAccountId,
+      role: StableCoinRole.DEFAULT_ADMIN_ROLE,
+    })
+  );
+
+  if (env.myAccountId && env.myPrivateKey) {
+    await Network.connect(
+      new ConnectRequest({
+        account: {
+          accountId: env.myAccountId,
+          privateKey: {
+            key: env.myPrivateKey,
+            type: "ED25519",
+          },
+        },
+        network: "testnet",
+        mirrorNode: mirrorNodeConfig,
+        rpcNode: rpcNodeConfig,
+        wallet: SupportedWallets.CLIENT,
+      })
+    );
+  }
+
+  res.json({
+    success: result,
+    message: `DEFAULT_ADMIN_ROLE granted to ${targetAccountId}`,
+  });
+};
+
+export const checkRole = async (req: Request, res: Response): Promise<void> => {
+  await initializeSDK();
+
+  if (!env.tokenId) {
+    res.status(400).json({
+      error: "Token ID is not set in the environment variables",
+    });
+    return;
+  }
+
+  const { accountId, role } = req.params;
+
+  if (!accountId || !role) {
+    res.status(400).json({
+      error: "Missing required fields: accountId, role",
+    });
+    return;
+  }
+
+  const hasRole = await Role.hasRole(
+    new HasRoleRequest({
+      tokenId: env.tokenId,
+      targetId: accountId,
+      role: role as StableCoinRole,
+    })
+  );
+
+  res.json({ accountId, tokenId: env.tokenId, role, hasRole });
+};
