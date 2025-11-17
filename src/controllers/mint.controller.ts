@@ -25,10 +25,12 @@ export const mint = async (req: Request, res: Response): Promise<void> => {
   const result = await StableCoin.cashIn(
     new CashInRequest({
       tokenId: env.tokenId,
-      targetId: env.multisigAccountId,
+      // Mint to a single account for now
+      // TODO: Mint to a multisig account in the future
+      targetId: env.accountId,
       amount,
     })
   );
 
-  res.json({ success: result });
+  res.status(200).json({ success: result, message: "Minted successfully" });
 };

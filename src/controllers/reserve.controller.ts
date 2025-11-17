@@ -51,7 +51,9 @@ export const updateReserve = async (
     })
   );
 
-  res.json({ success: result });
+  res
+    .status(200)
+    .json({ success: result, message: "Reserve updated successfully" });
 };
 
 export const getReserve = async (
@@ -73,5 +75,10 @@ export const getReserve = async (
     })
   );
 
-  res.json({ reserveAmount: reserveAmount.value.toString() });
+  res
+    .status(200)
+    .json({
+      reserveAmount: reserveAmount.value.toString(),
+      message: "Reserve amount fetched successfully",
+    });
 };
