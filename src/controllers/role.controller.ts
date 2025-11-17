@@ -40,7 +40,7 @@ export const grantAdminRole = async (
     return;
   }
 
-  console.log(`🔐 Reconnecting with admin account: ${env.adminId}`);
+  console.log(`Reconnecting with admin account: ${env.adminId}`);
   await Network.connect(
     new ConnectRequest({
       account: {
@@ -73,7 +73,7 @@ export const grantAdminRole = async (
   }
 
   console.log(
-    `👤 Granting DEFAULT_ADMIN_ROLE to ${targetAccountId} for token ${env.tokenId}`
+    `Granting DEFAULT_ADMIN_ROLE to ${targetAccountId} for token ${env.tokenId}`
   );
   const result = await Role.grantRole(
     new GrantRoleRequest({
