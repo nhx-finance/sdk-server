@@ -22,17 +22,17 @@
 2. **Build and start the container:**
 
    ```bash
-   docker-compose up -d --build
+   docker compose up -d --build
    ```
 
 3. **View logs:**
 
    ```bash
-   docker-compose logs -f
+   docker compose logs -f
    ```
 
 4. **Stop the container:**
 
    ```bash
-   docker-compose down
+   docker compose down
    ```
