@@ -2,6 +2,8 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+RUN apk add --no-cache python3 make g++
+
 COPY package.json package-lock.json ./
 
 RUN npm ci
@@ -14,9 +16,13 @@ FROM node:20-alpine AS production
 
 WORKDIR /app
 
+RUN apk add --no-cache python3 make g++
+
 COPY package.json package-lock.json ./
 
 RUN npm ci --only=production && npm cache clean --force
+
+RUN apk del python3 make g++
 
 COPY --from=builder /app/dist ./dist
 
