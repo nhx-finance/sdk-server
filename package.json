@@ -1,0 +1,21 @@
+{
+  "name": "sdk-server",
+  "version": "1.0.0",
+  "description": "Stablecoin Studio Server for KESY Token",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "github.com/nhx-finance/sdk-server"
+  },
+  "keywords": [
+    "stablecoin",
+    "studio",
+    "stablecoin",
+    "defi"
+  ],
+  "author": "divin3circle",
+  "license": "MIT"
+}
