@@ -5,14 +5,18 @@ import mintRoutes from "./mint.routes";
 import reserveRoutes from "./reserve.routes";
 import roleRoutes from "./role.routes";
 import healthRoutes from "./health.routes";
+import { apiKeyAuth } from "../middleware/apiKeyAuth";
 
 const router = Router();
 
+router.use("/health", healthRoutes);
+
 router.use("/api/token", tokenRoutes);
+
+router.use("/api", apiKeyAuth);
 router.use("/api/balance", balanceRoutes);
 router.use("/api/mint", mintRoutes);
 router.use("/api/reserve", reserveRoutes);
 router.use("/api", roleRoutes);
-router.use("/health", healthRoutes);
 
 export default router;

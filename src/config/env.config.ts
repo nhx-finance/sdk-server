@@ -14,4 +14,5 @@ export const env = {
   adminPrivateKey: process.env.ADMIN_PRIVATE_KEY,
   myAccountId: process.env.MY_ACCOUNT_ID,
   myPrivateKey: process.env.MY_PRIVATE_KEY,
+  apiKey: process.env.API_KEY,
 };
