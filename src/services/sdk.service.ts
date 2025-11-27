@@ -6,6 +6,7 @@ import {
 } from "@hashgraph/stablecoin-npm-sdk";
 import { mirrorNodeConfig, rpcNodeConfig } from "../config/sdk.config";
 import { env } from "../config/env.config";
+import { getSecret, Secrets } from "../config/secrets.config";
 
 let sdkInitialized = false;
 
@@ -24,13 +25,17 @@ export async function initializeSDK(): Promise<void> {
         },
       })
     );
+    const privateKey = await getSecret(Secrets.PRIVATE_KEY);
+    if (!privateKey) {
+      throw new Error("Private key not found");
+    }
 
     await Network.connect(
       new ConnectRequest({
         account: {
           accountId: env.accountId,
           privateKey: {
-            key: env.privateKey,
+            key: privateKey,
             type: "ECDSA",
           },
         },

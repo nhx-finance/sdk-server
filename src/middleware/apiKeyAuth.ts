@@ -1,17 +1,18 @@
 import { Request, Response, NextFunction } from "express";
-import { env } from "../config/env.config";
+import { getSecret, Secrets } from "../config/secrets.config";
 
-export function apiKeyAuth(
+export async function apiKeyAuth(
   req: Request,
   res: Response,
   next: NextFunction
-): void {
+): Promise<void> {
   const apiKey =
     req.headers["x-api-key"] ||
     req.headers["authorization"]?.replace("Bearer ", "");
 
-  if (!env.apiKey) {
-    console.warn("API_KEY not configured in environment variables");
+  const secretApiKey = await getSecret(Secrets.API_KEY);
+  if (!secretApiKey) {
+    console.warn("API key not found");
     res.status(500).json({
       error: "API key authentication not configured",
     });
@@ -26,7 +27,7 @@ export function apiKeyAuth(
     return;
   }
 
-  if (apiKey !== env.apiKey) {
+  if (apiKey !== secretApiKey) {
     res.status(403).json({
       error: "Invalid API key",
     });

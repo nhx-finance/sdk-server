@@ -44,7 +44,7 @@ docker run -d -p 3001:3001 nhx-sdk-server
 
 ### API Authentication
 
-This server uses API key authentication to secure protected endpoints. The API key is stored securely in **Azure Key Vault** and is only accessible to authenticated servers that have been granted access.
+This server uses API key authentication to secure protected endpoints. The API key and other sensitive secrets are stored securely in **Google Secret Manager** and are only accessible to authenticated servers that have been granted access.
 
 #### Public Endpoints
 
@@ -55,7 +55,7 @@ The following endpoints are publicly accessible and do not require authenticatio
 
 #### Protected Endpoints
 
-All other API endpoints require API key authentication. These endpoints can only be called by authenticated servers that have the API key stored in Azure Key Vault:
+All other API endpoints require API key authentication. These endpoints can only be called by authenticated servers that have the API key stored in Google Secret Manager:
 
 - `POST /api/token/transfer` - Transfer tokens
 - `GET /api/balance/*` - Balance-related endpoints
@@ -72,24 +72,34 @@ In addition to API key authentication, the server is protected by network-level 
 
 - **IP Restrictions**: IP address restrictions are enforced at the firewall level, ensuring that only authorized servers with approved IP addresses can reach the protected API endpoints. This provides an additional layer of security beyond API key authentication.
 
+- **Google Secret Manager Integration**: All sensitive secrets (API keys, private keys, etc.) are stored in Google Secret Manager rather than in environment variables or code. This provides:
+
+  - **Centralized Secret Management**: All secrets are managed in one secure location
+  - **Access Control**: Only services with proper Google Cloud credentials can access secrets
+  - **Audit Trail**: All secret access is logged and auditable
+  - **Automatic Rotation**: Secrets can be rotated without code changes
+  - **No Secret Exposure**: Secrets never appear in code, logs, or environment files
+
 - **Defense in Depth**: This multi-layered security approach combines:
   1. Network-level IP filtering (firewall)
   2. Application-level API key authentication
-  3. Secure key storage in Azure Key Vault
+  3. Secure secret storage in Google Secret Manager
+  4. Encrypted communication (HTTPS/TLS)
 
-This ensures that even if an API key were compromised, unauthorized IP addresses would still be blocked by the firewall, providing robust protection for sensitive operations.
+This ensures that even if an API key were compromised, unauthorized IP addresses would still be blocked by the firewall, and secrets remain protected in Google Secret Manager, providing robust protection for sensitive operations.
 
 ### Environment Variables
 
 The server uses the following environment variables:
 
 - PORT: The port to listen on
-- API_KEY: The API key for authenticating requests (stored in Azure Key Vault in production)
+- GCP_PROJECT_ID: The Google Cloud Project ID for Secret Manager access
+- GOOGLE_APPLICATION_CREDENTIALS_JSON: JSON credentials for Google Cloud authentication (service account key)
 - ACCOUNT_ID: The account ID to use for the server
-- PRIVATE_KEY: The private key to use for the server
 - KESY_TOKEN_ID: The token ID to use for the server
 - MULTISIG_ACCOUNT_ID: The multisig account ID to use for the server
 - FACTORY_ADDRESS: The factory address to use for the server
 - RESOLVER_ADDRESS: The resolver address to use for the server
 - ADMIN_ID: The admin account ID to use for the server
-- ADMIN_PRIVATE_KEY: The admin private key to use for the server
+
+**Note**: Sensitive secrets (API_KEY, PRIVATE_KEY, ADMIN_PRIVATE_KEY, etc.) are stored in **Google Secret Manager** and retrieved at runtime. They should not be set as environment variables in production. The application automatically fetches these secrets from Google Secret Manager using the provided GCP credentials.

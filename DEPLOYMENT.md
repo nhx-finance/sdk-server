@@ -10,13 +10,13 @@
    # .env
    PORT=3001
    ACCOUNT_ID=your_account_id
-   PRIVATE_KEY=your_private_key
    KESY_TOKEN_ID=your_token_id
    MULTISIG_ACCOUNT_ID=your_multisig_account_id
    FACTORY_ADDRESS=your_factory_address
    RESOLVER_ADDRESS=your_resolver_address
    ADMIN_ID=your_admin_id (optional)
-   ADMIN_PRIVATE_KEY=your_admin_private_key (optional)
+   GCP_PROJECT_ID=your_gcp_project_id
+   GOOGLE_APPLICATION_CREDENTIALS_JSON=your_google_application_credentials_json
    ```
 
 2. **Build and start the container:**

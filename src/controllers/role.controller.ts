@@ -11,6 +11,7 @@ import {
 import { initializeSDK } from "../services/sdk.service";
 import { env } from "../config/env.config";
 import { mirrorNodeConfig, rpcNodeConfig } from "../config/sdk.config";
+import { getSecret, Secrets } from "../config/secrets.config";
 
 export const grantAdminRole = async (
   req: Request,
@@ -32,7 +33,8 @@ export const grantAdminRole = async (
     return;
   }
 
-  if (!env.adminId || !env.adminPrivateKey) {
+  const adminPrivateKey = await getSecret(Secrets.PRIVATE_KEY);
+  if (!env.adminId || !adminPrivateKey) {
     res.status(500).json({
       error:
         "Admin credentials not configured. Please set ADMIN_ID and ADMIN_PRIVATE_KEY in .env file",
@@ -46,7 +48,7 @@ export const grantAdminRole = async (
       account: {
         accountId: env.adminId,
         privateKey: {
-          key: env.adminPrivateKey,
+          key: adminPrivateKey,
           type: "ED25519",
         },
       },
@@ -83,13 +85,14 @@ export const grantAdminRole = async (
     })
   );
 
-  if (env.myAccountId && env.myPrivateKey) {
+  const myPrivateKey = await getSecret(Secrets.PRIVATE_KEY);
+  if (env.myAccountId && myPrivateKey) {
     await Network.connect(
       new ConnectRequest({
         account: {
           accountId: env.myAccountId,
           privateKey: {
-            key: env.myPrivateKey,
+            key: myPrivateKey,
             type: "ED25519",
           },
         },

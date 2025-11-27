@@ -22,6 +22,7 @@
   "author": "divin3circle",
   "license": "MIT",
   "dependencies": {
+    "@google-cloud/secret-manager": "^6.1.1",
     "@hashgraph/stablecoin-npm-sdk": "^2.1.5",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
