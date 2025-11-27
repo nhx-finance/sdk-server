@@ -102,4 +102,4 @@ The server uses the following environment variables:
 - RESOLVER_ADDRESS: The resolver address to use for the server
 - ADMIN_ID: The admin account ID to use for the server
 
-**Note**: Sensitive secrets (API_KEY, PRIVATE_KEY, ADMIN_PRIVATE_KEY, etc.) are stored in **Google Secret Manager** and retrieved at runtime. They should not be set as environment variables in production. The application automatically fetches these secrets from Google Secret Manager using the provided GCP credentials.
+**Note**: Sensitive secrets (API_KEY, PRIVATE_KEY, ADMIN_PRIVATE_KEY, etc.) are stored in **Google Secret Manager** and retrieved at runtime. They should are not to be set as environment variables in production. The application automatically fetches these secrets from Google Secret Manager using the provided GCP credentials.
