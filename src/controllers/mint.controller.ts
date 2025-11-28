@@ -1,11 +1,9 @@
 import { Request, Response } from "express";
 import { StableCoin, CashInRequest } from "@hashgraph/stablecoin-npm-sdk";
-import { initializeSDK } from "../services/sdk.service";
+import { initializeSDK, retrySDKOperation } from "../services/sdk.service";
 import { env } from "../config/env.config";
 
 export const mint = async (req: Request, res: Response): Promise<void> => {
-  await initializeSDK();
-
   if (!env.tokenId || !env.multisigAccountId) {
     res.status(400).json({
       error: "Token ID or target ID is not set in the environment variables",
@@ -22,15 +20,32 @@ export const mint = async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  const result = await StableCoin.cashIn(
-    new CashInRequest({
-      tokenId: env.tokenId,
-      // Mint to a single account for now
-      // TODO: Mint to a multisig account in the future
-      targetId: env.accountId,
-      amount,
-    })
-  );
+  try {
+    const result = await retrySDKOperation(
+      () =>
+        StableCoin.cashIn(
+          new CashInRequest({
+            tokenId: env.tokenId,
+            // Mint to a single account for now
+            // TODO: Mint to a multisig account in the future
+            targetId: env.accountId,
+            amount,
+          })
+        ),
+      3,
+      "Mint tokens"
+    );
 
-  res.status(200).json({ success: result, message: "Minted successfully" });
+    res.status(200).json({ success: result, message: "Minted successfully" });
+  } catch (error) {
+    console.error("Error minting tokens:", error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    res.status(500).json({
+      error: "Failed to mint tokens",
+      message:
+        errorMessage.includes("502") || errorMessage.includes("Bad Gateway")
+          ? "Hedera RPC node is currently unavailable. Please try again later."
+          : errorMessage,
+    });
+  }
 };

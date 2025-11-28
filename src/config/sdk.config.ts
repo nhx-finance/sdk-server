@@ -1,7 +1,7 @@
 export const mirrorNodeConfig = {
   name: "Testnet Mirror Node",
   network: "testnet",
-  baseUrl: "https://testnet.mirrornode.hedera.com/api/v1/",
+  baseUrl: "https://testnet.mirrornode.hedera.com/api/v1",
   apiKey: "",
   headerName: "",
   selected: true,

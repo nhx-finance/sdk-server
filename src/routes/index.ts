@@ -5,7 +5,7 @@ import mintRoutes from "./mint.routes";
 import reserveRoutes from "./reserve.routes";
 import roleRoutes from "./role.routes";
 import healthRoutes from "./health.routes";
-import bankRoutes from "./balance.routes";
+import bankRoutes from "./bank.routes";
 import { apiKeyAuth } from "../middleware/apiKeyAuth";
 
 const router = Router();

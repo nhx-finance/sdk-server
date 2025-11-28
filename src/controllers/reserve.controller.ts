@@ -13,8 +13,6 @@ export const updateReserve = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  await initializeSDK();
-
   if (!env.tokenId) {
     res.status(400).json({
       error: "Token ID is not set in the environment variables",
@@ -60,8 +58,6 @@ export const getReserve = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  await initializeSDK();
-
   if (!env.tokenId) {
     res.status(400).json({
       error: "Token ID is not set in the environment variables",
@@ -75,10 +71,8 @@ export const getReserve = async (
     })
   );
 
-  res
-    .status(200)
-    .json({
-      reserveAmount: reserveAmount.value.toString(),
-      message: "Reserve amount fetched successfully",
-    });
+  res.status(200).json({
+    reserveAmount: reserveAmount.value.toString(),
+    message: "Reserve amount fetched successfully",
+  });
 };

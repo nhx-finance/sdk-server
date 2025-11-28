@@ -1,5 +1,4 @@
 import dotenv from "dotenv";
-import { getSecret, Secrets } from "./secrets.config";
 
 dotenv.config();
 
