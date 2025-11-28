@@ -11,6 +11,7 @@
    PORT=3001
    ACCOUNT_ID=your_account_id
    KESY_TOKEN_ID=your_token_id
+   KESY_TOPIC_ID=your_topic_id
    MULTISIG_ACCOUNT_ID=your_multisig_account_id
    FACTORY_ADDRESS=your_factory_address
    RESOLVER_ADDRESS=your_resolver_address
