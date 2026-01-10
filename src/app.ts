@@ -11,6 +11,7 @@ app.use(
       "http://localhost:3000",
       "https://nhx-frontend.vercel.app",
       "https://devnhx-finance.vercel.app",
+      "https://www.nhx.finance/",
     ],
     credentials: true,
   })
