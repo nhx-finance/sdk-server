@@ -70,9 +70,10 @@ export const getReserve = async (
       tokenId: env.tokenId,
     })
   );
+  const reserveAmountNumber = Number(reserveAmount.value) / 1e6;
 
   res.status(200).json({
-    reserveAmount: reserveAmount.value.toString(),
+    reserveAmount: reserveAmountNumber.toString(),
     message: "Reserve amount fetched successfully",
   });
 };
