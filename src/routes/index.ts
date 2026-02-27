@@ -6,6 +6,7 @@ import reserveRoutes from "./reserve.routes";
 import roleRoutes from "./role.routes";
 import healthRoutes from "./health.routes";
 import bankRoutes from "./bank.routes";
+import complianceRoutes from "./compliance.routes";
 import { apiKeyAuth } from "../middleware/apiKeyAuth";
 
 const router = Router();
@@ -18,6 +19,7 @@ router.use("/api/token", tokenRoutes);
 router.use("/api", apiKeyAuth);
 router.use("/api/balance", balanceRoutes);
 router.use("/api/mint", mintRoutes);
+router.use("/api/compliance", complianceRoutes);
 router.use("/api/reserve", reserveRoutes);
 router.use("/api", roleRoutes);
 

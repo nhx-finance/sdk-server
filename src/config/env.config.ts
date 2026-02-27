@@ -4,6 +4,7 @@ dotenv.config();
 
 export const env = {
   port: process.env.PORT || 3001,
+  topicId: process.env.KESY_TOPIC_ID!,
   tokenId: process.env.KESY_TOKEN_ID!,
   accountId: process.env.ACCOUNT_ID!,
   privateKey: "",
@@ -15,4 +16,5 @@ export const env = {
   myAccountId: process.env.MY_ACCOUNT_ID,
   myPrivateKey: "",
   apiKey: "",
+  dbConnectionString: process.env.DB_URL!,
 };

@@ -3,12 +3,12 @@ import {
   StableCoin,
   GetAccountBalanceRequest,
 } from "@hashgraph/stablecoin-npm-sdk";
-import { initializeSDK, retrySDKOperation } from "../services/sdk.service";
+import { retrySDKOperation } from "../services/sdk.service";
 import { env } from "../config/env.config";
 
 export const getBalance = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   if (!env.tokenId || !env.multisigAccountId) {
     res.status(400).json({
@@ -24,10 +24,10 @@ export const getBalance = async (
           new GetAccountBalanceRequest({
             tokenId: env.tokenId,
             targetId: env.multisigAccountId,
-          })
+          }),
         ),
       3,
-      "Get balance"
+      "Get balance",
     );
 
     res.json({ balance: balance.value.toString() });

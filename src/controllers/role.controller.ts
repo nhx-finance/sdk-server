@@ -15,7 +15,7 @@ import { getSecret, Secrets } from "../config/secrets.config";
 
 export const grantAdminRole = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   if (!env.tokenId) {
     res.status(400).json({
@@ -56,7 +56,7 @@ export const grantAdminRole = async (
       mirrorNode: mirrorNodeConfig,
       rpcNode: rpcNodeConfig,
       wallet: SupportedWallets.CLIENT,
-    })
+    }),
   );
 
   const adminHasRole = await Role.hasRole(
@@ -64,7 +64,7 @@ export const grantAdminRole = async (
       tokenId: env.tokenId,
       targetId: env.adminId,
       role: StableCoinRole.DEFAULT_ADMIN_ROLE,
-    })
+    }),
   );
 
   if (!adminHasRole) {
@@ -75,14 +75,14 @@ export const grantAdminRole = async (
   }
 
   console.log(
-    `Granting DEFAULT_ADMIN_ROLE to ${targetAccountId} for token ${env.tokenId}`
+    `Granting DEFAULT_ADMIN_ROLE to ${targetAccountId} for token ${env.tokenId}`,
   );
   const result = await Role.grantRole(
     new GrantRoleRequest({
       tokenId: env.tokenId,
       targetId: targetAccountId,
       role: StableCoinRole.DEFAULT_ADMIN_ROLE,
-    })
+    }),
   );
 
   const myPrivateKey = await getSecret(Secrets.PRIVATE_KEY);
@@ -100,7 +100,7 @@ export const grantAdminRole = async (
         mirrorNode: mirrorNodeConfig,
         rpcNode: rpcNodeConfig,
         wallet: SupportedWallets.CLIENT,
-      })
+      }),
     );
   }
 
@@ -127,13 +127,26 @@ export const checkRole = async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
+  // Accept either the enum key name (e.g. "DEFAULT_ADMIN_ROLE") or the raw hex value
+  const resolvedRole: StableCoinRole =
+    role in StableCoinRole
+      ? StableCoinRole[role as keyof typeof StableCoinRole]
+      : (role as StableCoinRole);
+
+  if (!Object.values(StableCoinRole).includes(resolvedRole)) {
+    res.status(400).json({
+      error: `Invalid role: "${role}". Valid roles are: ${Object.keys(StableCoinRole).join(", ")}`,
+    });
+    return;
+  }
+
   const hasRole = await Role.hasRole(
     new HasRoleRequest({
       tokenId: env.tokenId,
       targetId: accountId,
-      role: role as StableCoinRole,
-    })
+      role: resolvedRole,
+    }),
   );
 
-  res.json({ accountId, tokenId: env.tokenId, role, hasRole });
+  res.json({ accountId, tokenId: env.tokenId, role, resolvedRole, hasRole });
 };

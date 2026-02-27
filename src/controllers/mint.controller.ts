@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { StableCoin, CashInRequest } from "@hashgraph/stablecoin-npm-sdk";
-import { initializeSDK, retrySDKOperation } from "../services/sdk.service";
+import { retrySDKOperation } from "../services/sdk.service";
 import { env } from "../config/env.config";
 
 export const mint = async (req: Request, res: Response): Promise<void> => {
@@ -30,10 +30,10 @@ export const mint = async (req: Request, res: Response): Promise<void> => {
             // TODO: Mint to a multisig account in the future
             targetId: env.accountId,
             amount,
-          })
+          }),
         ),
       3,
-      "Mint tokens"
+      "Mint tokens",
     );
 
     res.status(200).json({ success: result, message: "Minted successfully" });

@@ -5,13 +5,14 @@ import {
   GetReserveAddressRequest,
   UpdateReserveAmountRequest,
   GetReserveAmountRequest,
+  KYCRequest,
 } from "@hashgraph/stablecoin-npm-sdk";
 import { initializeSDK } from "../services/sdk.service";
 import { env } from "../config/env.config";
 
 export const updateReserve = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   if (!env.tokenId) {
     res.status(400).json({
@@ -32,7 +33,7 @@ export const updateReserve = async (
   const reserveAddress = await StableCoin.getReserveAddress(
     new GetReserveAddressRequest({
       tokenId: env.tokenId,
-    })
+    }),
   );
 
   if (!reserveAddress || reserveAddress === "0.0.0") {
@@ -46,7 +47,7 @@ export const updateReserve = async (
     new UpdateReserveAmountRequest({
       reserveAddress: reserveAddress,
       reserveAmount: reserveAmount.toString(),
-    })
+    }),
   );
 
   res
@@ -56,7 +57,7 @@ export const updateReserve = async (
 
 export const getReserve = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   if (!env.tokenId) {
     res.status(400).json({
@@ -68,7 +69,7 @@ export const getReserve = async (
   const reserveAmount = await ReserveDataFeed.getReserveAmount(
     new GetReserveAmountRequest({
       tokenId: env.tokenId,
-    })
+    }),
   );
   const reserveAmountNumber = Number(reserveAmount.value) / 1e6;
 
