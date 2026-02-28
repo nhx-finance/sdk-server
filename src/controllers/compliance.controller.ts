@@ -74,6 +74,28 @@ export const freezeAccount = async (
       console.error("Failed to submit freeze event to topic:", error);
     });
 
+    //check if account exists in db as active before creating a new frozen account record
+    const activeAccount = await Account.findOne({
+      accountId,
+      status: "active",
+    });
+
+    if (activeAccount) {
+      await Account.updateOne(
+        { accountId },
+        { $set: { status: "frozen", freezeReason, frozenDate: new Date() } },
+      ).catch((error) => {
+        console.error("Failed to update account status in database:", error);
+      });
+
+      res.status(200).json({
+        success: result,
+        frozenAccount: activeAccount,
+        message: "Account frozen successfully",
+      });
+      return;
+    }
+
     const frozenAccount = await Account.create({
       accountId,
       evmAddress: evmAlias,
