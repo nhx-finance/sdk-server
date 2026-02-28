@@ -45,7 +45,8 @@ export const freezeAccount = async (
 
   try {
     const existingAccount = await Account.findOne({
-      where: { accountId, status: "frozen" },
+      accountId,
+      status: "frozen",
     });
     if (existingAccount) {
       res.status(409).json({
@@ -79,6 +80,7 @@ export const freezeAccount = async (
       freezeReason,
       status: "frozen",
       isWiped: false,
+      frozenDate: new Date(),
     });
 
     res.status(200).json({
@@ -146,12 +148,15 @@ export const unfreezeAccount = async (
       console.error("Failed to submit unfreeze event to topic:", error);
     });
 
-    const unfrozenAccount = await Account.findOne({ where: { accountId } });
+    console.log("Account ID to unfreeze:", accountId);
+
+    const unfrozenAccount = await Account.findOne({ accountId });
+    console.log("Unfrozen account found in database:", unfrozenAccount);
 
     if (unfrozenAccount) {
-      Account.updateOne(
+      await Account.updateOne(
         { accountId },
-        { status: "active", freezeReason: unfreezeReason },
+        { $set: { status: "active", freezeReason: unfreezeReason } },
       ).catch((error) => {
         console.error("Failed to update account status in database:", error);
       });
@@ -224,7 +229,7 @@ export const wipeAccount = async (
 
     await Account.updateOne(
       { accountId },
-      { status: "wiped", freezeReason: wipeReason, isWiped: true },
+      { $set: { status: "wiped", freezeReason: wipeReason, isWiped: true } },
     ).catch((error) => {
       console.error("Failed to update account status in database:", error);
     });
@@ -247,7 +252,7 @@ export const getFrozenAccounts = async (
 ): Promise<void> => {
   try {
     const frozenAccounts = await Account.find({
-      where: { status: { $in: ["frozen", "wiped"] } },
+      status: { $in: ["frozen", "wiped"] },
     });
     res.json({ frozenAccounts });
   } catch (error) {
@@ -265,10 +270,8 @@ export const getRecentlyFrozenOrWipedAccounts = async (
 ): Promise<void> => {
   try {
     const recentFrozenOrWipedAccounts = await Account.find({
-      where: {
-        status: { $in: ["frozen", "wiped"] },
-        updatedAt: { $gte: new Date(Date.now() - 5 * 60 * 1000) }, // last 5 minutes, cause cre workflow runs every 5 minutes
-      },
+      status: { $in: ["frozen", "wiped"] },
+      updatedAt: { $gte: new Date(Date.now() - 5 * 60 * 1000) }, // last 5 minutes, cause cre workflow runs every 5 minutes
     });
     res.json({ recentFrozenOrWipedAccounts });
   } catch (error) {

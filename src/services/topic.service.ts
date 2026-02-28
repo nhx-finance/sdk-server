@@ -1,12 +1,17 @@
-import { Client, TopicMessageSubmitTransaction } from "@hashgraph/sdk";
+import {
+  Client,
+  PrivateKey,
+  TopicMessageSubmitTransaction,
+} from "@hashgraph/sdk";
 import { getSecret, Secrets } from "../config/secrets.config";
 import { env } from "../config/env.config";
 
 export async function submitMessageToTopic(message: string): Promise<void> {
-  const privateKey = await getSecret(Secrets.PRIVATE_KEY);
-  if (!privateKey) {
+  const rawKey = await getSecret(Secrets.PRIVATE_KEY);
+  if (!rawKey) {
     throw new Error("Private key not found");
   }
+  const privateKey = PrivateKey.fromStringECDSA(rawKey);
   const client = Client.forTestnet();
   client.setOperator(env.accountId, privateKey);
   try {
