@@ -9,6 +9,7 @@ import { retrySDKOperation } from "../services/sdk.service";
 import { AccountId } from "@hashgraph/sdk";
 import { submitMessageToTopic } from "../services/topic.service";
 import Account from "../models/Accounts";
+import { mirrorNodeConfig } from "../config/sdk.config";
 
 export const freezeAccount = async (
   req: Request,
@@ -67,7 +68,7 @@ export const freezeAccount = async (
       "Freeze account",
     );
 
-    const evmAlias = AccountId.fromString(accountId).toEvmAddress() || "N/A";
+    const evmAlias = await getEvmAliasFromMirrorNode(accountId);
     const topicMessage = `Account ${accountId}, evm alias ${evmAlias} frozen with reason: ${freezeReason}`;
 
     submitMessageToTopic(topicMessage).catch((error) => {
@@ -91,6 +92,7 @@ export const freezeAccount = async (
       res.status(200).json({
         success: result,
         frozenAccount: activeAccount,
+        evmAlias,
         message: "Account frozen successfully",
       });
       return;
@@ -151,6 +153,17 @@ export const unfreezeAccount = async (
     return;
   }
 
+  const unfrozenAccount = await Account.findOne({ accountId });
+  if (!unfrozenAccount || unfrozenAccount.status !== "frozen") {
+    console.warn(
+      "Account not found in database or not frozen, cannot update status to active",
+    );
+    res.status(404).json({
+      error: "Account not found or not frozen in database",
+    });
+    return;
+  }
+
   try {
     await retrySDKOperation(
       () =>
@@ -163,7 +176,7 @@ export const unfreezeAccount = async (
       3,
       "Unfreeze account",
     );
-    const evmAlias = AccountId.fromString(accountId).toEvmAddress() || "N/A";
+    const evmAlias = await getEvmAliasFromMirrorNode(accountId);
     const topicMessage = `Account ${accountId}, evm alias ${evmAlias} unfrozen with reason: ${unfreezeReason}`;
 
     submitMessageToTopic(topicMessage).catch((error) => {
@@ -172,7 +185,6 @@ export const unfreezeAccount = async (
 
     console.log("Account ID to unfreeze:", accountId);
 
-    const unfrozenAccount = await Account.findOne({ accountId });
     console.log("Unfrozen account found in database:", unfrozenAccount);
 
     if (unfrozenAccount) {
@@ -242,7 +254,7 @@ export const wipeAccount = async (
       3,
       "Wipe account",
     );
-    const evmAlias = AccountId.fromString(accountId).toEvmAddress() || "N/A";
+    const evmAlias = await getEvmAliasFromMirrorNode(accountId);
     const topicMessage = `Account ${accountId}, evm alias ${evmAlias} wiped with reason: ${wipeReason}`;
 
     submitMessageToTopic(topicMessage).catch((error) => {
@@ -305,11 +317,79 @@ export const getRecentlyFrozenOrWipedAccounts = async (
   }
 };
 
+interface MirrorNodeTokenBalance {
+  token_id: string;
+  balance: number;
+}
+
+interface MirrorNodeAccountBalance {
+  balance: number;
+  timestamp: string;
+  tokens: MirrorNodeTokenBalance[];
+}
+
+interface MirrorNodeAccountKey {
+  _type: string;
+  key: string;
+}
+
+interface MirrorNodeAccountLinks {
+  next: string | null;
+}
+
+interface MirrorNodeAccountResponse {
+  account: string;
+  alias: string;
+  auto_renew_period: number;
+  balance: MirrorNodeAccountBalance;
+  created_timestamp: string;
+  decline_reward: boolean;
+  deleted: boolean;
+  ethereum_nonce: number;
+  evm_address: string;
+  expiry_timestamp: string;
+  key: MirrorNodeAccountKey;
+  max_automatic_token_associations: number;
+  memo: string;
+  pending_reward: number;
+  receiver_sig_required: boolean;
+  staked_account_id: string | null;
+  staked_node_id: number | null;
+  stake_period_start: string | null;
+  transactions: unknown[];
+  links: MirrorNodeAccountLinks;
+}
+
 function isValidAccountId(id: string): boolean {
   try {
     AccountId.fromString(id);
     return true;
   } catch (error) {
     return false;
+  }
+}
+
+async function getEvmAliasFromMirrorNode(accountId: string): Promise<string> {
+  try {
+    const url = `${mirrorNodeConfig.baseUrl}accounts/${accountId}?limit=1&order=asc&transactions=false`;
+    console.log("Fetching account details from Mirror Node:", url);
+    const response = await fetch(url, {
+      method: "GET",
+      headers: mirrorNodeConfig.apiKey
+        ? { [mirrorNodeConfig.headerName]: mirrorNodeConfig.apiKey }
+        : {},
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Mirror Node API error: ${response.status} ${response.statusText}`,
+      );
+    }
+
+    const data = (await response.json()) as MirrorNodeAccountResponse;
+    return data.evm_address || "N/A";
+  } catch (error) {
+    console.error("Failed to retrieve EVM alias from Mirror Node:", error);
+    return "N/A";
   }
 }
